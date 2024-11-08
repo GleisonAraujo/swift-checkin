@@ -1,0 +1,30 @@
+#serviços
+services:
+  db:    #Nome do serviço 
+    image: mysql:latest     #Imagem utilizada
+    container_name: my-mysql      #Nome do conteiner
+    environment:
+      MYSQL_DATABASE: swift-checkin   #Nome do banco
+      MYSQL_ROOT_PASSWORD: root        #Senha do banco
+    ports:
+      - "3306:3306" #Porta utilizada
+    #volumes:
+     # - ./scripts-config:/docker-entrypoint-initdb.d  #Inicialização de um script sql 
+  #Serviço PhpMyAdmin para Gerenciar o Banco de Dados como Vizualização
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin #Imagem utilizada
+    environment:
+      PMA_HOST: db #Variavel referente ao servidor sql para se conectar
+      PMA_SERVER_NAME: ServerPhpMyAdmin
+      MYSQL_ROOT_PASSWORD: root #Senha para entrar no PhpAdmin
+    ports:
+      - "8080:80" #Porta utilizada
+
+#Resumo: Cria dois conteiners
+#        Cria e configura um banco de dados
+#        Inicializa um arquivo com comandos sql e executa
+
+# banco de dados - porta: 3306
+# PhpMyAdmin - porta: 8080
+# server - porta: 3000
+# mobile - porta:
