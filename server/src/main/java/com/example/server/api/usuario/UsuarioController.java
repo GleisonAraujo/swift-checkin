@@ -1,15 +1,17 @@
 package com.example.server.api.usuario;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import java.util.List; // Importa a classe List para trabalhar com listas de objetos
+import java.util.concurrent.CompletableFuture;  // Importa a classe CompletableFuture para trabalhar com funções assíncronas
+import java.util.concurrent.ExecutionException; // Importa a classe ExecutionException para lidar com exceções ao esperar o resultado de tarefas assíncronas
+
+import org.springframework.beans.factory.annotation.Autowired; // Importa o Autowired para permitir a injeção de dependências no Spring
+import org.springframework.http.HttpStatus; // Importa a classe HttpStatus para trabalhar com códigos de status HTTP
+import org.springframework.http.ResponseEntity; // Importa a classe ResponseEntity para criar respostas HTTP personalizadas
+
+import org.springframework.web.bind.annotation.*; // Importa todas as anotações relacionadas a controladores REST no Spring MVC (como @RestController, @GetMapping, @PostMapping, etc.)
+
 
 import com.example.server.database.entity.Usuario;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @RestController // Define a classe como controller
 @RequestMapping("/usuario/") // Definindo o caminho da API 
@@ -117,6 +119,22 @@ public class UsuarioController {
             CompletableFuture<Void> delete = usuarioServico.deleteUsuario(id);
             delete.get();
             return ResponseEntity.ok().body("Usuario deletado"); // Retorna ok 2000
+        }
+    }
+    // 06 - Endpoint para buscar o usuário logado
+    @GetMapping("/me/{usuarioId}")  // Adicionando endpoint para buscar o usuário logado
+    public ResponseEntity<?> buscaMe(@PathVariable Long usuarioId) throws InterruptedException, ExecutionException {
+        if (usuarioId <= 0) {
+            return ResponseEntity.badRequest().body("ID inválido");  // Valida o ID
+        }
+        // Chama o serviço para buscar o usuário logado (buscaMe)
+        CompletableFuture<Usuario> usuario = usuarioServico.buscaMe(usuarioId);
+        Usuario usuarioResult = usuario.get();  // Aguarda o retorno
+
+        if (usuarioResult != null) {
+            return ResponseEntity.ok(usuarioResult);  // Retorna 200 (OK) com o usuário
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");  // Retorna 404 (Not Found) se não encontrar o usuário
         }
     }
 }
