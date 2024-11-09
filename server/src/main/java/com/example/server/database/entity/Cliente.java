@@ -13,9 +13,12 @@ public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column(name = "nome", nullable = false, length = 100)
+    private String nome;
 
-    @Column(name = "documento_identidade", nullable = false, length = 20)
-    private String documentoIdentidade;
+    @Column(name = "cpf", nullable = false, length = 20)
+    private String cpf;
 
     @Column(name = "email", length = 100)
     private String email;
@@ -29,8 +32,9 @@ public class Cliente {
     // Construtores, getters e setters
     public Cliente() {}
 
-    public Cliente(String documentoIdentidade, String email, String telefone, Date dataNascimento) {
-        this.documentoIdentidade = documentoIdentidade;
+    public Cliente(String cpf, String email, String telefone, Date dataNascimento, String nome) {
+        this.nome = nome;
+        this.cpf = cpf;
         this.email = email;
         this.telefone = telefone;
         this.dataNascimento = dataNascimento;
@@ -44,15 +48,7 @@ public class Cliente {
     public void setId(Long id) {
         this.id = id;
     }
-
-    public String getDocumentoIdentidade() {
-        return documentoIdentidade;
-    }
-
-    public void setDocumentoIdentidade(String documentoIdentidade) {
-        this.documentoIdentidade = documentoIdentidade;
-    }
-
+    
     public String getEmail() {
         return email;
     }
@@ -76,4 +72,21 @@ public class Cliente {
     public void setDataNascimento(Date dataNascimento) {
         this.dataNascimento = dataNascimento;
     }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+    
 }
