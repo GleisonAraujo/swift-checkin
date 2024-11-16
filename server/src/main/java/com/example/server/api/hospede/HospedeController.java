@@ -30,4 +30,13 @@ public class HospedeController {
         
     }
 
+    //Get all TRUE
+    @GetMapping("/ativos/")
+    public ResponseEntity<List<HospedesAtivos>> tdsHospedeAtivos() throws InterruptedException, ExecutionException {
+        CompletableFuture<List<HospedesAtivos>> tdsHopedes = hospedeService.tdsHospedeAtivos();
+        List<HospedesAtivos> listHopedes = tdsHopedes.get(); 
+        return ResponseEntity.ok(listHopedes);
+        
+    }
+
 }

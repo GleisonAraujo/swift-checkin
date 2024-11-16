@@ -25,10 +25,16 @@ public class HospedeService {
 
     // METODOS
 
-    // ALL HOSPEDES
+    // ALL HOSPEDES 
     @Async
     public CompletableFuture<List<HospedesAtivos>> tdsHospede() {
         List<HospedesAtivos> hospedes = hospedesAtivosRepository.findAll();
+        return CompletableFuture.completedFuture(hospedes);
+    }
+
+    @Async
+    public CompletableFuture<List<HospedesAtivos>> tdsHospedeAtivos() {
+        List<HospedesAtivos> hospedes = hospedesAtivosRepository.findByStatus(true);
         return CompletableFuture.completedFuture(hospedes);
     }
 
