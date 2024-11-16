@@ -11,5 +11,8 @@ import com.example.server.database.entity.Usuario;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByNome(String nome);  // Busca o usuário por nome
+
+    // Verifica se existe um usuário com o nome informado
+    boolean existsByNome(String name);  // Retorna 'true' se o usuário existir
 }
 

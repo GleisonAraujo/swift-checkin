@@ -10,4 +10,6 @@ public interface QuartoRepository extends JpaRepository<Quarto, Long>{
     Long countByDisponibilidade(Boolean disponibilidade); // Contagem de quartos disponíveis
 
     Long countByTipo(String tipo); // Contagem de quartos de tipo específico
+
+    boolean existsByNumero(String numero);  // Retorna 'true' se o usuário existir
 }
