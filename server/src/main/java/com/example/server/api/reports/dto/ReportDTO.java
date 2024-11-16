@@ -10,8 +10,11 @@ public class ReportDTO {
     private Long totalReservasProgramadas;
     private Long relatorioReservasConcluidas;
     private Long relatorioReservasCanceladas;
+    private Double receitas;
 
     // Getters and Setters
+
+    
     public Long getTotalHospedes() {
         return totalHospedes;
     }
@@ -74,5 +77,13 @@ public class ReportDTO {
 
     public void setRelatorioReservasCanceladas(Long relatorioReservasCanceladas) {
         this.relatorioReservasCanceladas = relatorioReservasCanceladas;
+    }
+
+    public Double getReceitas() {
+        return receitas;
+    }
+
+    public void setReceitas(Double receitas) {
+        this.receitas = receitas;
     }
 }

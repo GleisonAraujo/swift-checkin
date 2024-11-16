@@ -26,6 +26,7 @@ public class ReportsController {
         reportDTO.setTotalReservasProgramadas(reportsService.totalReservasProgramadas());
         reportDTO.setRelatorioReservasConcluidas(reportsService.relatorioReservasConcluidas());
         reportDTO.setRelatorioReservasCanceladas(reportsService.relatorioReservasCanceladas());
+        reportDTO.setReceitas(reportsService.receitas());
 
         return reportDTO;
     }

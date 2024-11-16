@@ -63,15 +63,8 @@ public class ReportsService {
     }
 
     // Método para calcular as receitas
-    public Double relatorioReceitas() {
-        //List<Reserva> reservasConcluidas = reservaRepository.findByDataCheckInIsNotNullAndDataCheckOutIsNotNull();
-        double totalReceitas = 0.0;
-
-       // for (Reserva reserva : reservasConcluidas) {
-        //    totalReceitas += reserva.getQtdDiaria() * reserva.getQuarto().getPrDiaria(); // Multiplicando diárias pelo valor da diária do quarto
-       // }
-
-        return null;
+    public Double receitas() {
+        return reservaRepository.somarValorFinalDeReservas();
     }
 }
 
