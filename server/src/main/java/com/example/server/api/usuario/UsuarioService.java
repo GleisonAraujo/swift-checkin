@@ -27,17 +27,21 @@ public class UsuarioService {
         return CompletableFuture.completedFuture(novoUsuario);
     }
     
-    // Método buscaMe: Busca o usuário atualmente logado 
     @Async
-    public CompletableFuture<Usuario> buscaMe(Long usuarioId) {
-        Optional<Usuario> usuario = usuarioRepository.findById(usuarioId);
-        return usuario.isPresent() ? CompletableFuture.completedFuture(usuario.get()) :
-                                     CompletableFuture.completedFuture(null);
+    public boolean usuarioExiste(String nome) {
+        return usuarioRepository.existsByNome(nome);  
     }
 
     @Async
     public CompletableFuture<Usuario> buscarUsuario(Long id) {
         Optional<Usuario> usuario = usuarioRepository.findById(id);
+        return usuario.isPresent() ? CompletableFuture.completedFuture(usuario.get()) :
+        CompletableFuture.completedFuture(null);
+    }
+
+    @Async
+    public CompletableFuture<Usuario> buscaMe(Long usuarioId) {
+        Optional<Usuario> usuario = usuarioRepository.findById(usuarioId);
         return usuario.isPresent() ? CompletableFuture.completedFuture(usuario.get()) :
                                      CompletableFuture.completedFuture(null);
     }
@@ -47,7 +51,6 @@ public class UsuarioService {
         List<Usuario> usuarios = usuarioRepository.findAll();
         return CompletableFuture.completedFuture(usuarios);
     }
-
 
     @Async
     public CompletableFuture<Usuario> atualizarUsuario(Usuario usuario, Long id) {
