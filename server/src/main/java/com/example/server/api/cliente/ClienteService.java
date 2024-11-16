@@ -30,6 +30,11 @@ public class ClienteService {
         return CompletableFuture.completedFuture(clienteSalvo);
     }
 
+    @Async
+    public boolean usuarioExiste(String cpf) {
+        return clienteRepository.existsByCpf(cpf);  
+    }
+
     // Método buscarCliente assíncrono para buscar um cliente pelo ID
     @Async
     public CompletableFuture<Cliente> buscarCliente(Long id) {
