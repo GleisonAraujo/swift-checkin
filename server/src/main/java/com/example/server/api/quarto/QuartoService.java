@@ -28,6 +28,11 @@ public class QuartoService {
         return CompletableFuture.completedFuture(quartoSalvo);
     }
 
+    @Async
+    public boolean numeroExiste(String numero) {
+        return quartoRepository.existsByNumero(numero);  
+    }
+
     // Método buscarQuartoById assíncrono para buscar um quarto pelo ID
     @Async
     public CompletableFuture<Quarto> buscarQuartoById(Long id) {
