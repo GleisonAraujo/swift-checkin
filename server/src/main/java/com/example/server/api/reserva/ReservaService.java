@@ -24,17 +24,18 @@ public class ReservaService {
 
     @Autowired
     public ReservaService(ReservaRepository reservaRepository,
-                          HospedesAtivosRepository hospedesAtivosRepository,
-                          HospedeService hospedeService) {
+            HospedesAtivosRepository hospedesAtivosRepository,
+            HospedeService hospedeService) {
         this.reservaRepository = reservaRepository;
         this.hospedesAtivosRepository = hospedesAtivosRepository;
-        this.hospedeService = hospedeService;  // Agora o hospedeService também está sendo injetado
+        this.hospedeService = hospedeService; // Agora o hospedeService também está sendo injetado
     }
 
     // METODOS
 
     // criarReserva
     public Reserva testecriarReserva(Reserva reserva) {
+
         Reserva atualiza = reservaRepository.save(reserva);
         return atualiza;
     }
@@ -88,50 +89,75 @@ public class ReservaService {
     @Async
     public CompletableFuture<Reserva> registrarDataCheckIn(Long id, Date dataCheckIn) {
         Optional<Reserva> reservaExistente = reservaRepository.findById(id);
+
+        // Verifica se a reserva existe
         if (reservaExistente.isPresent()) {
             Reserva reserva = reservaExistente.get();
 
-            // Define a data de check-in se ainda estiver nula
-            if (reserva.getDataCheckIn() == null) {
-                reserva.setDataCheckIn(dataCheckIn);
-                // Implementar o registro hospede
-                reservaRepository.save(reserva);
-                HospedesAtivos hospede = new HospedesAtivos();
-                hospede.setReserva(reserva);
-                hospede.setStatus(true);
-                hospedeService.checkInHospede(hospede);
-            }
+            // Verifica se dataCheckIn não é null e se é uma data válida (não o valor
+            // padrão)
+            if (dataCheckIn != null && dataCheckIn.getTime() != 0) {
+                // Se a data de check-in ainda estiver nula, define a data
+                if (reserva.getDataCheckIn() == null) {
+                    reserva.setDataCheckIn(dataCheckIn);
+                    // Salva a reserva com a data de check-in
+                    reservaRepository.save(reserva);
 
-            return CompletableFuture.completedFuture(reserva);
+                    // Implementar o registro do hóspede
+                    HospedesAtivos hospede = new HospedesAtivos();
+                    hospede.setReserva(reserva);
+                    hospede.setStatus(true);
+                    hospedeService.checkInHospede(hospede);
+                    return CompletableFuture.completedFuture(reserva);
+                }
+                // Retorna a reserva
+                return CompletableFuture.completedFuture(null);
+            }
         }
+        // Se a reserva não for encontrada, retorna null
         return CompletableFuture.completedFuture(null);
     }
 
     @Async
-    public CompletableFuture<Reserva> registrarDataCheckOut(Long id, Date dataCheckOut) {
-        Optional<Reserva> reservaExistente = reservaRepository.findById(id);
-        if (reservaExistente.isPresent()) {
-            Reserva reserva = reservaExistente.get();
-
-            // Define a data de check-out se ainda estiver nula
-            if (reserva.getDataCheckOut() == null) {
-                reserva.setDataCheckOut(dataCheckOut);
-                reserva.setStatus(false); // Define o status como false ao registrar o check-out
-                // Implementar o registro off - hospede
-                reservaRepository.save(reserva);
-                
-                HospedesAtivos hospede = hospedesAtivosRepository.findByReserva(reserva).orElse(null);
-                if (hospede != null) {
-                    hospede.setStatus(false); // Marca o hóspede como "check-out"
-                    hospede.setReserva(reserva); // Vincula a reserva ao hóspede
-                    hospedeService.checkOutHospede(hospede); // Chama o serviço de check-out
-                }
-            }
-
-            return CompletableFuture.completedFuture(reserva);
-        }
+public CompletableFuture<Reserva> registrarDataCheckOut(Long id, Date dataCheckOut) {
+    Optional<Reserva> reservaExistente = reservaRepository.findById(id);
+    if (!reservaExistente.isPresent()) {
+        // Se a reserva não existir, retornamos null para indicar que o ID não foi encontrado
         return CompletableFuture.completedFuture(null);
     }
+    
+    Reserva reserva = reservaExistente.get();
+
+    // Verifica se a data de check-out é válida
+    if (dataCheckOut != null && dataCheckOut.getTime() != 0) {
+        // Verifica se o check-out ainda não foi feito e o check-in já foi realizado
+        if (reserva.getDataCheckOut() == null && reserva.getDataCheckIn() != null) {
+            reserva.setDataCheckOut(dataCheckOut);
+            reserva.setStatus(false); // Define o status como false ao registrar o check-out
+
+            // Registra o check-out
+            reservaRepository.save(reserva);
+
+            // Verifica se o hóspede está ativo e realiza o check-out
+            HospedesAtivos hospede = hospedesAtivosRepository.findByReserva(reserva).orElse(null);
+            if (hospede != null) {
+                hospede.setStatus(false); // Marca o hóspede como "check-out"
+                hospede.setReserva(reserva); // Vincula a reserva ao hóspede
+                hospedeService.checkOutHospede(hospede); // Chama o serviço de check-out
+            }
+            return CompletableFuture.completedFuture(reserva);
+        } else if (reserva.getDataCheckOut() != null) {
+            // Se o check-out já foi feito, retorna null para indicar que não é necessário fazer nada
+            return CompletableFuture.completedFuture(null);
+        } else {
+            // Caso o check-in não tenha sido realizado
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+    // Caso a data de check-out seja inválida, retornamos null
+    return CompletableFuture.completedFuture(null);
+}
+
 
     // deletarReservaById
     @Async

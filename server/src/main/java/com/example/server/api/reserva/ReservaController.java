@@ -24,29 +24,29 @@ import com.example.server.api.cliente.ClienteService;
 @RequestMapping("/reserva/") // Definindo o caminho da API
 public class ReservaController {
 
-    @Autowired // O Spring vai injetar o UsuarioServico aqui para
+    @Autowired // O Spring vai injetar o ReservaService aqui para utilizar os métodos
     private ReservaService reservaServico;
-    @Autowired // O Spring vai injetar o UsuarioServico aqui para
+    @Autowired // O Spring vai injetar o UsuarioService aqui para utilizar os métodos
     private UsuarioService usuarioServico;
-    @Autowired // O Spring vai injetar o UsuarioServico aqui para
+    @Autowired // O Spring vai injetar o QuartoService aqui para utilizar os métodos
     private QuartoService quartoService;
-    @Autowired // O Spring vai injetar o UsuarioServico aqui para
+    @Autowired // O Spring vai injetar o ClienteService aqui para utilizar os métodos
     private ClienteService clienteService;
 
-    // Metodos
+    // Métodos
 
-    // POST criarReserva
+    // Endpoint 'POST' para criar reserva
     @PostMapping("/")
     public ResponseEntity<?> criarReserva(@RequestBody Reserva novaReserva) {
         // Validar dados da nova reserva
         if (novaReserva.getStatus() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Status da reserva não pode ser nulo");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Status da reserva não pode ser nulo"); // 400 -  
         }
         if (novaReserva.getQtdDiaria() == null || novaReserva.getQtdDiaria() < 1) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantidade de diárias inválida");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantidade de diárias inválida"); // 400 - Bad
         }
         if (novaReserva.getDataReserva() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data da reserva não pode ser nula");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data da reserva não pode ser nula"); // 400 - Bad
         }
 
         // Obter os IDs das entidades relacionadas
@@ -68,13 +68,16 @@ public class ReservaController {
         Cliente cliente = clienteFuture.join();
 
         if (usuario == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado"); // 404 - Not Found
         }
         if (quarto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quarto não encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quarto não encontrado"); // 404 - Not Found
+        }
+        if (Boolean.FALSE.equals(quarto.getDisponibilidade())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quarto indisponível"); // 404 - Not Found
         }
         if (cliente == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado"); // 404 - Not Found
         }
 
         // Associar as entidades encontradas à nova reserva
@@ -82,121 +85,158 @@ public class ReservaController {
         novaReserva.setQuarto(quarto);
         novaReserva.setCliente(cliente);
 
+        Double valorreserva = novaReserva.getQtdDiaria() * quarto.getPrDiaria();
+        novaReserva.setValorFinal(valorreserva);
+
         // Criar a reserva no banco
         reservaServico.criarReserva(novaReserva);
 
         // Retornar a nova reserva criada
-        return ResponseEntity.ok(novaReserva);
+        return ResponseEntity.ok(novaReserva); // 200 - OK
     }
 
-    // GET ALL
+    // Endpoint 'GET' para retornar todas as reservas
     @GetMapping("/")
     public ResponseEntity<?> buscarTdsReserva() throws InterruptedException, ExecutionException {
         CompletableFuture<List<Reserva>> tdsReserva = reservaServico.buscarTdsReserva();
         List<Reserva> result = tdsReserva.get();
 
         if (result.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Retorna 204 (No Content) se não houver usuários
+            return ResponseEntity.noContent().build(); // 204 - No Content
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(result); // 200 - OK
     }
 
-    // GET BY ID
+    // Endpoint 'GET' para retornar uma reserva pelo ID
     @GetMapping("/{id}")
     public ResponseEntity<?> buscaReservById(@PathVariable long id) throws InterruptedException, ExecutionException {
-        if (id <= 0) {
-            // Retorna 400 (Bad Request) se algum campo estiver nulo
-            return ResponseEntity.badRequest().body("ID inválido");
-        }
-        // Chama o serviço para buscar o usuário de forma assíncrona
+        // Chama o serviço para buscar a reserva de forma assíncrona
         CompletableFuture<Reserva> reserva = reservaServico.buscaReservById(id);
 
         // Espera a resposta da operação assíncrona
         Reserva result = reserva.get(); // Aguarda o retorno
 
         if (result != null) {
-            return ResponseEntity.ok(result); // Retorna 200 (OK) com o usuário
+            return ResponseEntity.ok(result); // 200 - OK
         } else {
-            return ResponseEntity.badRequest().body("Não encontrado"); // Retorna bad request 400
+            return ResponseEntity.badRequest().body("Não encontrado"); // 400 - Bad Request
         }
     }
 
-    // PATCH BY ID
+    // Endpoint 'PATCH' para atualizar uma reserva pelo ID
     @PatchMapping("/{id}")
     public ResponseEntity<Reserva> atualizarReservaById(@RequestBody Reserva reserva, @PathVariable long id)
             throws InterruptedException, ExecutionException {
-        // Chama o serviço para atualizar o usuário de forma assíncrona
+        // Chama o serviço para atualizar a reserva de forma assíncrona
         CompletableFuture<Reserva> reservaAtualizado = reservaServico.atualizarReservaById(reserva, id);
 
         // Espera a resposta da operação assíncrona
         Reserva reservaResult = reservaAtualizado.get(); // Aguarda o retorno
 
         if (reservaResult != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(reservaResult); // Retorna 201 (Created) com o usuário
-                                                                                  // atualizado
+            return ResponseEntity.status(HttpStatus.CREATED).body(reservaResult); // 201 - Created
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Retorna 404 (Not Found) se não encontrar o
-                                                                        // usuário
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 - Not Found
         }
     }
 
-    // PATCH para registrar dataCheckIn
+    // Endpoint 'PATCH' para registrar data de CheckIn
     @PatchMapping("/checkin/{id}")
-    public ResponseEntity<Reserva> registrarDataCheckIn(
+    public ResponseEntity<?> registrarDataCheckIn(
             @PathVariable long id,
             @RequestBody Date dataCheckIn) throws InterruptedException, ExecutionException {
+
+        CompletableFuture<Reserva> reserva = reservaServico.buscaReservById(id);
+
+        // Espera a resposta da operação assíncrona
+        Reserva result = reserva.get(); // Aguarda o retorno
+
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ID não encontrado"); // 404 - Not Found
+        }
+        if (result.getStatus() == false) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Reserva indisponível"); // 404 - Not Found
+        }
 
         CompletableFuture<Reserva> reservaAtualizada = reservaServico.registrarDataCheckIn(id, dataCheckIn);
         Reserva reservaResult = reservaAtualizada.get();
 
         if (reservaResult != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(reservaResult); // Retorna 201 (Created) com a reserva
-                                                                                  // atualizada
+            // Atualiza a disponibilidade do quarto
+            Long quartoId = reservaResult.getQuarto().getId();
+            CompletableFuture<Quarto> quartoFuture = quartoService.buscarQuartoById(quartoId);
+            Quarto quarto = quartoFuture.join();
+
+            if (quarto != null) {
+                // Define a disponibilidade do quarto como verdadeira (disponível)
+                quarto.setDisponibilidade(false);
+                quartoService.atualizarQuarto(quartoId, quarto);
+            }
+
+            // Retorna a resposta com a reserva atualizada
+            return ResponseEntity.status(HttpStatus.CREATED).body(reservaResult); // 201 - Created
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Retorna 404 (Not Found) se a reserva não for
-                                                                        // encontrada
+            return ResponseEntity.badRequest().body("Check-in já realizado"); // 400 - Bad Request
         }
     }
 
-    // PATCH para registrar dataCheckOut e definir status como false
+    // Endpoint 'PATCH' para registrar data de CheckOut e definir status como false
     @PatchMapping("/checkout/{id}")
-    public ResponseEntity<Reserva> registrarDataCheckOut(
+    public ResponseEntity<?> registrarDataCheckOut(
             @PathVariable long id,
             @RequestBody Date dataCheckOut) throws InterruptedException, ExecutionException {
 
+        CompletableFuture<Reserva> reserva = reservaServico.buscaReservById(id);
+
+        // Espera a resposta da operação assíncrona
+        Reserva result = reserva.get(); // Aguarda o retorno
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ID não encontrado"); // 404 - Not Found
+        }
+        if (result.getStatus() == false) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Reserva indisponível"); // 404 - Not Found
+        }
+
+        // Realiza a atualização da data de CheckOut
         CompletableFuture<Reserva> reservaAtualizada = reservaServico.registrarDataCheckOut(id, dataCheckOut);
         Reserva reservaResult = reservaAtualizada.get();
 
         if (reservaResult != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(reservaResult); // Retorna 201 (Created) com a reserva
-                                                                                  // atualizada
+            // Atualiza a disponibilidade do quarto
+            Long quartoId = reservaResult.getQuarto().getId();
+            CompletableFuture<Quarto> quartoFuture = quartoService.buscarQuartoById(quartoId);
+            Quarto quarto = quartoFuture.join();
+
+            if (quarto != null) {
+                // Define a disponibilidade do quarto como verdadeira (disponível)
+                quarto.setDisponibilidade(true);
+                quartoService.atualizarQuarto(quartoId, quarto);
+            }
+
+            // Retorna a resposta com a reserva atualizada
+            return ResponseEntity.status(HttpStatus.CREATED).body(reservaResult); // 201 - Created
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Retorna 404 (Not Found) se a reserva não for
-                                                                        // encontrada
+            return ResponseEntity.badRequest().body("Check-in não realizado ou data de check-out inválida"); // 400 - bad                                                                                                 
         }
     }
 
-    // DELETE BY ID
+    // Endpoint 'DELETE' para deletar uma reserva pelo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletarReservaById(@PathVariable Long id)
             throws InterruptedException, ExecutionException {
-        if (id <= 0) {
-            // Retorna 400 (Bad Request) se algum campo estiver nulo
-            return ResponseEntity.badRequest().body("ID inválido");
-        }
-        // Chama o serviço para buscar o usuário de forma assíncrona
+        // Chama o serviço para buscar a reserva de forma assíncrona
         CompletableFuture<Reserva> reserva = reservaServico.buscaReservById(id);
-        // Resultado da busca armazenado no 'usuarioResult'
+        // Resultado da busca armazenado no 'reservaResult'
         Reserva reservaResult = reserva.get();
 
-        // válidação
+        // Validação
         if (reservaResult == null) {
-            return ResponseEntity.badRequest().body("ID não encontrado"); // Retorna bad request 400
+            return ResponseEntity.badRequest().body("ID não encontrado"); // 400 - Bad Request
         } else {
+            // Chama o serviço para deletar a reserva de forma assíncrona
             CompletableFuture<Void> delete = reservaServico.deletarReservaById(id);
-            delete.get();
-            return ResponseEntity.ok().body("Usuario deletado"); // Retorna ok 2000
+            delete.get(); // Aguarda a exclusão da reserva
+            return ResponseEntity.ok().body("Reserva deletada"); // 200 - OK
         }
     }
-
 }
