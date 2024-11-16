@@ -2,6 +2,7 @@ package com.example.server.database.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
@@ -36,7 +37,14 @@ public class Quarto {
         this.tipo = tipo;
         this.prDiaria = prDiaria;
         this.descricao = descricao;
-        this.disponibilidade = disponibilidade;
+        this.disponibilidade = true;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.disponibilidade == null) {
+            this.disponibilidade = true;  
+        }
     }
 
     // Getters e setters

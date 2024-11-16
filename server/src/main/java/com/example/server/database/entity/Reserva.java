@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.JoinColumn;
 import java.util.Date;
 
@@ -43,10 +44,13 @@ public class Reserva {
     @Column(name = "data_reserva")
     private Date dataReserva;
 
+    @Column(name = "valorFinal", nullable = false)
+    private Double valorFinal;
+
     // Construtores, getters e setters
     public Reserva() {}
 
-    public Reserva(Cliente cliente, Quarto quarto, Usuario usuario, Date dataCheckIn, Date dataCheckOut, Integer qtdDiaria, Boolean status, Date dataReserva) {
+    public Reserva(Cliente cliente, Quarto quarto, Usuario usuario, Date dataCheckIn, Date dataCheckOut, Integer qtdDiaria, Boolean status, Date dataReserva, Double valorFinal) {
         this.cliente = cliente;
         this.quarto = quarto;
         this.usuario = usuario;
@@ -55,6 +59,13 @@ public class Reserva {
         this.qtdDiaria = qtdDiaria;
         this.status = status;
         this.dataReserva = dataReserva;
+        this.valorFinal = valorFinal;
+    }
+    @PrePersist
+    public void prePersist() {
+        if (this.valorFinal == null) {
+            this.valorFinal = 0.0;  
+        }
     }
 
     public Long getId() {
@@ -128,5 +139,14 @@ public class Reserva {
     public void setDataReserva(Date dataReserva) {
         this.dataReserva = dataReserva;
     }
+
+    public Double getValorFinal() {
+        return valorFinal;
+    }
+
+    public void setValorFinal(Double valorFinal) {
+        this.valorFinal = valorFinal;
+    }
+    
     
 }

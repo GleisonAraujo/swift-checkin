@@ -2,6 +2,7 @@ package com.example.server.database.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
@@ -22,6 +23,9 @@ public class Usuario {
     @Column(name = "senha", nullable = false, length = 255)
     private String senha;
 
+    @Column(name = "role", nullable = false, length = 20)
+    private String role;
+
     // Construtores, getters e setters
     public Usuario() {}
 
@@ -29,6 +33,14 @@ public class Usuario {
         this.nome = nome;
         this.fullName = fullName;
         this.senha = senha;
+        this.role = "comum";
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.role == null) {
+            this.role = "comum";  
+        }
     }
 
     // Getters e setters
@@ -63,4 +75,13 @@ public class Usuario {
     public void setSenha(String senha) {
         this.senha = senha;
     }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+    
 }
